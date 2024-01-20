@@ -11,22 +11,52 @@ if ("seed" == $task) {
 }
 ;
 
+if ('delete' == $task) {
+    $id = $_GET['id'];
+    if ($id>0) {
+        deleteStudent($id);
+        header('location: index.php?task=report');
+    }
+    
+}
+
+$fname = '';
+$lname = '';
+$roll = '';
+
 if (isset($_POST['submit'])) {
     $fname = htmlspecialchars($_POST['fname']);
     $lname = htmlspecialchars($_POST['lname']);
     $roll = $_POST['roll'];
+    $id = $_POST['id']?? '';
 
-    if ($fname != '' && $lname != '' && $roll != '') {
-        $isStudentAdded = addStudent($fname, $lname, $roll);
-
-        if ($isStudentAdded) {
-            header('location: index.php?task=report');
-        }else{
-            header('location: index.php?task=report&error=1');
+    if ($id) {
+        //update a existing student
+        if ($fname != '' && $lname != '' && $roll != '') {
+            $isStudentUpdate = updateStudent($id, $fname, $lname, $roll);
+            if ($isStudentUpdate) {
+                header('location: index.php?task=report');
+            }else{
+                $error = 1;
+            }
+            
         }
-
-        
+    }else{
+        //add a new student
+        if ($fname != '' && $lname != '' && $roll != '') {
+            $isStudentAdded = addStudent($fname, $lname, $roll);
+    
+            if ($isStudentAdded) {
+                header('location: index.php?task=report');
+            }else{
+                $error = 1;
+            }
+    
+            
+        }
     }
+
+    
 }
 
 
@@ -69,7 +99,7 @@ if (isset($_POST['submit'])) {
         <?php if ("1" == $error): ?>
             <div class="row">
                 <div class="column column-60 column-offset-20">
-                    <blockquote>Duplicate Roll Found !</blockquote>
+                    <blockquote>Duplicate Roll Number Found !</blockquote>
                 </div>
             </div>
         <?php endif; ?>
@@ -85,20 +115,46 @@ if (isset($_POST['submit'])) {
         <?php if ('add' == $task): ?>
             <div class="row">
                 <div class="column column-60 column-offset-20">
-                    <form action="index.php?report" method="POST">
+                    <form action="index.php?task=add" method="POST">
                         <label for="fname">First Name</label>
-                        <input type="text" name="fname" id="fname">
+                        <input type="text" name="fname" id="fname" value="<?php echo $fname;?>">
                         <label for="lname">Last Name</label>
-                        <input type="text" name="lname" id="lname">
+                        <input type="text" name="lname" id="lname" value="<?php echo $lname;?>">
                         <label for="roll">Roll</label>
-                        <input type="number" name="roll" id="roll">
+                        <input type="number" name="roll" id="roll" value="<?php echo $roll;?>">
                         <button type="submit" class="button-primary" value="save" name="submit">Save</button>
                     </form>
                 </div>
             </div>
         <?php endif; ?>
 
+        <?php if ('edit' == $task): 
+            $id = $_GET['id'];
+            $student = getStudent($id);
+            if ($student):
+        ?>
+            <div class="row">
+                <div class="column column-60 column-offset-20">
+                    <form method="POST">
+                    <input type="hidden" name="id" id="id" value="<?php echo $id;?>">
+                        <label for="fname">First Name</label>
+                        <input type="text" name="fname" id="fname" value="<?php echo $student['fname'];?>">
+                        <label for="lname">Last Name</label>
+                        <input type="text" name="lname" id="lname" value="<?php echo $student['lname'];?>">
+                        <label for="roll">Roll</label>
+                        <input type="number" name="roll" id="roll" value="<?php echo $student['roll'];?>">
+                        <button type="submit" class="button-primary" value="save" name="submit">Update</button>
+                    </form>
+                </div>
+            </div>
+        <?php 
+        endif;
+        endif; 
+        ?>
+
     </div>
+
+<script type="text/javascript" src="assets/js/script.js"></script>
 </body>
 
 </html>
